@@ -30,7 +30,7 @@ void GUI::onButtonClicked(wxCommandEvent& event)
 {
 	wxButton* tempButton = wxDynamicCast(event.GetEventObject(), wxButton);
 	if (tempButton->GetLabel().IsSameAs("=")) {
-		calculator->calculateExpression(resultField->GetValue().ToStdString());
+		resultField->AppendText(calculator->calculateExpression(resultField->GetValue().ToStdString()));
 	}
 	else if (tempButton->GetLabel().IsSameAs("pi")) {
 		resultField->AppendText(to_string(M_PI));
@@ -114,14 +114,4 @@ void GUI::setButtons()
 	xCoordinate += 60;
 	Button25 = new wxButton(this, id, buttonValues[24], wxPoint(xCoordinate, yCoordinate), wxSize(xSize, ySize));
 	yCoordinate += 60;
-}
-
-void GUI::addSteps(const string firstOperand, const string anOperator, const string secondOperand, const string result) {
-	// Display the calculation step.
-	if (anOperator == "log10" || anOperator == "ln") {
-		//stepsField.setText(stepsField.getText() + operator + "(" + secondOperand + ") = " + result + "\n");
-	}
-	else {
-		//stepsField.setText(stepsField.getText() + firstOperand + " " + operator + " " + secondOperand + " = " + result + "\n");
-	}
 }

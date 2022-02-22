@@ -49,7 +49,7 @@ private:
 public:
 	void onButtonClicked(wxCommandEvent &event);
 	void setButtons();
-	void addSteps(const std::string firstOperand, const std::string anOperator, const std::string secondOperand, const std::string result);
+    void addSteps(const std::string firstOperand, const std::string anOperator, const std::string secondOperand, const std::string result);
 	void setCalculator(BasicMath* newCalculator);
 
 public:

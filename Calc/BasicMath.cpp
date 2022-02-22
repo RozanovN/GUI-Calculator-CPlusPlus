@@ -27,7 +27,7 @@ using namespace std;
     * @param userInput a string that represents the expression given by the user
     * @return the result of expression as a string
     */
-    string BasicMath::calculateExpression(const string userInput) {
+    string BasicMath::calculateExpression(const string userInput, const wxListBox* stepsField) {
         vector<string> expression = convertToReversePolishNotation(userInput);
         int i;
 
@@ -63,7 +63,7 @@ using namespace std;
     * @param userInput a string that represents the expression given by the user
     * @return the result of expression as a String
     */
-    string BasicMath::evaluateExpression(const string firstOperand, const string anOperator, const string secondOperand) {
+    string BasicMath::evaluateExpression(const string firstOperand, const string anOperator, const string secondOperand, const wxListBox* stepsField) {
         double result;
 
         if (anOperator == "+") {
@@ -86,7 +86,7 @@ using namespace std;
             result = 0;
         }
 
-        //add steps (missing)
+        addSteps(firstOperand, anOperator, secondOperand, stepsField);
         return to_string(result);
     }
 
@@ -164,3 +164,15 @@ using namespace std;
         auto iterator = operationOrder.find(anOperator);
         return iterator -> second;
     }
+
+    void addSteps(const string firstOperand, const string anOperator, const string secondOperand, const string result, const wxListBox* stepsField) {
+    // Display the calculation step.
+    if (anOperator == "log10" || anOperator == "ln") {
+        stepsField->Append(anOperator + "(" + secondOperand + ") =" + result);
+        //stepsField.setText(stepsField.getText() + operator + "(" + secondOperand + ") = " + result + "\n");
+    }
+    else {
+        stepsField->Append(firstOperand + " " + anOperator + " " + secondOperand + " = " + result);
+        //stepsField.setText(stepsField.getText() + firstOperand + " " + operator + " " + secondOperand + " = " + result + "\n");
+    }
+}
