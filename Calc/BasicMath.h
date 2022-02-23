@@ -4,6 +4,7 @@
 #pragma once
 
 #include <stack>
+#include "wx/wx.h"
 
 class BasicMath {
 private:
@@ -16,16 +17,16 @@ public:
     BasicMath();
 
 public:
-    std::string calculateExpression(const std::string userInput, const wxListBox* stepsField);
+    std::string calculateExpression(const std::string userInput, wxListBox* stepsField);
     std::vector<std::string> getButtonValues();
 
 private:
-    std::string evaluateExpression(const std::string firstOperand, const std::string anOperator, const std::string secondOperand, const wxListBox* stepsField);
+    std::string evaluateExpression(const std::string firstOperand, const std::string anOperator, const std::string secondOperand, wxListBox* stepsField);
     std::vector<std::string> tokenizeExpression(std::string expression);
     std::vector<std::string> convertToReversePolishNotation(const std::string expression);
-    void addElementsOfStackToArray(std::vector<std::string> result, std::stack<std::string> stackOfOperands);
-    void addElementsOfStackToArray(std::vector<std::string> result, std::stack<std::string> stackOfOperands, const std::string anOperator);
+    void addElementsOfStackToArray(std::vector<std::string>& result, std::stack<std::string>& stackOfOperators);
+    void addElementsOfStackToArray(std::vector<std::string>& result, std::stack<std::string>& stackOfOperators, std::string anOperator);
     bool isOperand(const std::string operandOrOperator);
     int getOrderValue(const std::string anOperator);
-    void addSteps(const std::string firstOperand, const std::string anOperator, const std::string secondOperand, const std::string result, const wxListBox* stepsField);
+    void addSteps(const std::string firstOperand, const std::string anOperator, const std::string secondOperand, const std::string result, wxListBox* stepsField);
     };

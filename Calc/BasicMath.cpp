@@ -12,6 +12,7 @@
 #include <cstring>
 #include <sstream>
 #include <map>
+#include "wx/wx.h"
 
 using namespace std;
 
@@ -27,19 +28,19 @@ using namespace std;
     * @param userInput a string that represents the expression given by the user
     * @return the result of expression as a string
     */
-    string BasicMath::calculateExpression(const string userInput, const wxListBox* stepsField) {
+    string BasicMath::calculateExpression(const string userInput, wxListBox* stepsField) {
         vector<string> expression = convertToReversePolishNotation(userInput);
         int i;
 
         for (i = 0; i < expression.size(); i++) {
             if (!isOperand(expression[i])) {
                 if (i - 2 >= 0) {
-                    expression[i] = evaluateExpression(expression[i-2], expression[i], expression[i-1]);
+                    expression[i] = evaluateExpression(expression[i-2], expression[i], expression[i-1], stepsField);
                     expression.erase(expression.begin() + i - 1);
                     expression.erase(expression.begin() + i - 2);
                     i -= 2;
                 } else {
-                    expression[i] = evaluateExpression("0", expression[i], expression[i - 1]);
+                    expression[i] = evaluateExpression("0", expression[i], expression[i - 1], stepsField);
                     expression.erase(expression.begin() + i - 1);
                     --i;
                 }
@@ -63,7 +64,7 @@ using namespace std;
     * @param userInput a string that represents the expression given by the user
     * @return the result of expression as a String
     */
-    string BasicMath::evaluateExpression(const string firstOperand, const string anOperator, const string secondOperand, const wxListBox* stepsField) {
+    string BasicMath::evaluateExpression(const string firstOperand, const string anOperator, const string secondOperand, wxListBox* stepsField) {
         double result;
 
         if (anOperator == "+") {
@@ -86,10 +87,16 @@ using namespace std;
             result = 0;
         }
 
-        addSteps(firstOperand, anOperator, secondOperand, stepsField);
+        addSteps(firstOperand, anOperator, secondOperand, to_string(result), stepsField);
         return to_string(result);
     }
 
+    /*
+    * Tokenizes the expression into operands and operators.
+    * 
+    * @param expression a string representing a mathematical expression
+    * @return a vector of strings representing the tokenized expression
+    */
     vector<string> BasicMath::tokenizeExpression(string expression) {
         vector<string> arrayOfTokens;
         string temp;
@@ -103,6 +110,12 @@ using namespace std;
         return arrayOfTokens;
     }
 
+    /*
+    * Converts the expression to reverse polish notation form.
+    *
+    * @param expression a string representing a mathematical expression
+    * @return a vector of string representing the expression in the reverse polish notation form
+    */
     vector<string> BasicMath::convertToReversePolishNotation(const string expression) {
         vector<string> result;
         stack<string> stackOfOperators;
@@ -123,31 +136,56 @@ using namespace std;
         return result;
     }
 
-    void BasicMath::addElementsOfStackToArray(vector<string> result, stack<string> stackOfOperands) {
-        while (!(stackOfOperands.empty() || stackOfOperands.top() == "(")) {
-            string temp = stackOfOperands.top();
+    /*
+    * Moves the elements of the given stack to the given vector.
+    *
+    * @param expression a vector of strings representing the tokenized expression
+    * @param result a stack of strings representing the operators in the expression
+    */
+    void BasicMath::addElementsOfStackToArray(vector<string>& result, stack<string>& stackOfOperators) {
+        while (!(stackOfOperators.empty() || stackOfOperators.top() == "(")) {
+            string temp = stackOfOperators.top();
+            stackOfOperators.pop();
             result.push_back(temp);
         }
-        if (!stackOfOperands.empty()) {
-            stackOfOperands.pop();
+        if (!stackOfOperators.empty()) {
+            stackOfOperators.pop();
         }
     }
 
-    void BasicMath::addElementsOfStackToArray(vector<string> result, stack<string> stackOfOperands,
-                                              const string anOperator) {
-        while (!stackOfOperands.empty() && getOrderValue(anOperator) <= getOrderValue(stackOfOperands.top())) {
-            string temp = stackOfOperands.top();
+    /*
+    * Moves the elements of the given stack to the given vector while the last operator in stack of operators has a bigger value than anOperator.
+    *
+    * @param expression a vector of strings representing the tokenized expression
+    * @param result a stack of strings representing the operators in the expression
+    * @param anOperator a string representing a mathematical operator
+    */
+    void BasicMath::addElementsOfStackToArray(vector<string>& result, stack<string>& stackOfOperators, string anOperator) {
+        while (!stackOfOperators.empty() && getOrderValue(anOperator) <= getOrderValue(stackOfOperators.top())) {
+            string temp = stackOfOperators.top();
             result.push_back(temp);
         }
-        stackOfOperands.push(anOperator);
+        stackOfOperators.push(anOperator);
     }
 
+    /*
+    * Returns true if the given string an operand, else false.
+    *
+    * @param operandOrOperator a string representing a potential operand
+    * @return true if the given string an operand, otherwise false
+    */
     bool BasicMath::isOperand(const string operandOrOperator) {
         char* nullPointer = nullptr;
         double value = strtod(operandOrOperator.c_str(), &nullPointer);
         return nullPointer != operandOrOperator.c_str() && *nullPointer == '\0' && value != HUGE_VAL;
     }
 
+    /*
+    * Returns the value of operator representing its order of execution.
+    *
+    * @param anOperator representing a mathematical operator
+    * @return true if the given string an operand, otherwise false
+    */
     int BasicMath::getOrderValue(const string anOperator) {
         map<string, int> operationOrder {
             {"^", 3},
@@ -165,14 +203,21 @@ using namespace std;
         return iterator -> second;
     }
 
-    void addSteps(const string firstOperand, const string anOperator, const string secondOperand, const string result, const wxListBox* stepsField) {
-    // Display the calculation step.
-    if (anOperator == "log10" || anOperator == "ln") {
-        stepsField->Append(anOperator + "(" + secondOperand + ") =" + result);
-        //stepsField.setText(stepsField.getText() + operator + "(" + secondOperand + ") = " + result + "\n");
+    /*
+    * Displays a calculation step.
+    *
+    * @param firstOperand a string representing a mathematical operand
+    * @param anOperator a string  representing a mathematical operator
+    * @param secondOperand a string representing a mathematical operand
+    * @param result a string representing the result of calculations
+    * @param stepsField a wxListBox representing a frame to display the calculation step
+    */
+    void BasicMath::addSteps(const string firstOperand, const string anOperator, const string secondOperand, const string result, wxListBox* stepsField) {
+        // 
+        if (anOperator == "log10" || anOperator == "ln") {
+            stepsField->AppendString(anOperator + "(" + secondOperand + ") =" + result);
+        }
+        else {
+            stepsField->AppendString(firstOperand + " " + anOperator + " " + secondOperand + " = " + result);
+        }
     }
-    else {
-        stepsField->Append(firstOperand + " " + anOperator + " " + secondOperand + " = " + result);
-        //stepsField.setText(stepsField.getText() + firstOperand + " " + operator + " " + secondOperand + " = " + result + "\n");
-    }
-}

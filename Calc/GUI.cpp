@@ -9,28 +9,43 @@ wxEND_EVENT_TABLE()
 
 using namespace std;
 
+/**
+* Constructs a GUI.
+*/
 GUI::GUI() : wxFrame(nullptr, wxID_ANY, "Calculator", wxPoint(30, 30), wxSize(660, 470))
 {
 	resultField = new wxTextCtrl(this, wxID_ANY, "", wxPoint(50, 25), wxSize(290, 50), wxTE_READONLY);
 	stepsField = new wxListBox(this, wxID_ANY, wxPoint(400, 25), wxSize(200, 370));
-
 }
 
+/**
+* Destructs this GUI.
+*/
 GUI::~GUI()
 {
 	
 }
 
+/**
+* Sets the calculator.
+* 
+* @param newCalculator a BasicMath object representing basic mathematical calculator
+*/
 void GUI::setCalculator(BasicMath* newCalculator) 
 {
 	calculator = newCalculator;
 }
 
+/**
+* Handles the event associated with a button.
+*
+* @param event an address for the wxCommandEvent object
+*/
 void GUI::onButtonClicked(wxCommandEvent& event)
 {
 	wxButton* tempButton = wxDynamicCast(event.GetEventObject(), wxButton);
 	if (tempButton->GetLabel().IsSameAs("=")) {
-		resultField->AppendText(calculator->calculateExpression(resultField->GetValue().ToStdString()));
+		resultField->SetValue(calculator->calculateExpression(resultField->GetValue().ToStdString(), stepsField));
 	}
 	else if (tempButton->GetLabel().IsSameAs("pi")) {
 		resultField->AppendText(to_string(M_PI));
@@ -48,6 +63,9 @@ void GUI::onButtonClicked(wxCommandEvent& event)
 	event.Skip();
 }
 
+/**
+* Sets buttons.
+*/
 void GUI::setButtons()
 {
 	vector<string> buttonValues = calculator->getButtonValues();
