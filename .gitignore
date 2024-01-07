@@ -363,7 +363,6 @@ MigrationBackup/
 FodyWeavers.xsd
 
 #CMakeLists
-CMakeLists.txt
 /cmake-build-debug/
 
 #Idea
